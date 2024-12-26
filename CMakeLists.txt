@@ -1,0 +1,69 @@
+# Copyright (c) 2022 ARM Limited. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+cmake_minimum_required(VERSION 3.19)
+cmake_policy(VERSION 3.19)
+
+set(MBED_OS_PATH ${CMAKE_CURRENT_SOURCE_DIR}/mbed-os CACHE INTERNAL "")
+
+# Set default path for mbed_app.json5 (no force-write for override)
+set(MBED_APP_JSON_PATH mbed_app.json5 CACHE INTERNAL "")
+
+# Set default path for custom_targets.json5 (no force-write for override)
+set(CUSTOM_TARGETS_PATH custom_targets CACHE INTERNAL "")
+set(CUSTOM_TARGETS_JSON_PATH ${CUSTOM_TARGETS_PATH}/custom_targets.json5 CACHE INTERNAL "")
+
+# Load Mbed CE toolchain file and basic build system
+include(${MBED_OS_PATH}/tools/cmake/app.cmake)
+
+set(APP_PROJECT NUMAKER_MBED_CE_LORAWAN_EXAMPLE)
+set(APP_TARGET NuMaker-mbed-ce-lorawan-example)
+
+# Set up project name
+project(${APP_PROJECT})
+
+# Add Nuvoton CMake list files to CMake default module path
+#
+# Normally, this is added in ${MBED_OS_PATH}, but ${CUSTOM_TARGETS_PATH}
+# is in front and needs it.
+list(APPEND CMAKE_MODULE_PATH
+    ${MBED_OS_PATH}/targets/TARGET_NUVOTON/scripts
+)
+
+# Add Mbed OS library
+add_subdirectory(${MBED_OS_PATH})
+
+# User-provided MBEDTLS_USER_CONFIG_FILE for mbedtls
+target_include_directories(mbed-mbedtls
+    PUBLIC
+        .
+)
+
+add_executable(${APP_TARGET})
+
+target_include_directories(${APP_TARGET}
+    PRIVATE
+        .
+)
+
+target_sources(${APP_TARGET}
+    PRIVATE
+        main.cpp
+        trace_helper.cpp
+)
+
+target_link_libraries(${APP_TARGET}
+    PRIVATE
+        mbed-os
+        mbed-lorawan
+)
+
+# Temporary fix to build profile inconsistent with mbed-lora library build.
+# See: https://github.com/mbed-ce/mbed-os/issues/407
+target_link_libraries(mbed-lorawan PUBLIC mbed-rtos-flags)
+
+# Must call this for each target to set up bin file creation, code upload, etc
+mbed_set_post_build(${APP_TARGET})
+
+# Make sure this is the last line of the top-level build script
+mbed_finalize_build()

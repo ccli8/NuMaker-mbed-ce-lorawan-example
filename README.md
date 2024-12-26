@@ -1,7 +1,12 @@
 ![](./resources/official_armmbed_example_badge.png)
-# Example LoRaWAN application for Mbed-OS
+# Example for LoRaWAN on Nuvoton's Mbed CE enabled boards
 
-This is an example application based on `Mbed-OS` LoRaWAN protocol APIs. The Mbed-OS LoRaWAN stack implementation is compliant with LoRaWAN v1.0.2 specification.  See this [link](https://os.mbed.com/blog/entry/Introducing-LoRaWAN-11-support/) for information on support for other LoRaWAN spec versions. This application can work with any Network Server if you have correct credentials for the said Network Server. 
+This is an example application based on `Mbed-OS` LoRaWAN protocol APIs.
+The Mbed-OS LoRaWAN stack implementation is compliant with LoRaWAN v1.0.2 specification.
+See this [link](https://os.mbed.com/blog/entry/Introducing-LoRaWAN-11-support/) for information on support for other LoRaWAN spec versions. This application can work with any Network Server if you have correct credentials for the said Network Server.
+
+Check out [Mbed CE](https://github.com/mbed-ce)
+for details on Mbed OS community edition.
 
 ## Getting Started
 
@@ -15,43 +20,46 @@ OR
 
 [Mbed Enabled LoRa Module](#module-support)
 
-### Import the example application
-For [Mbed Online Compiler](https://ide.mbed.com/compiler/) users:
-- Select "Import", then search for "mbed-os-example-lorawan" from "Team mbed-os-examples".  Or simply, import this repo by URL.
+## Support development tools
 
-- NOTE: Do NOT select "Update all libraries to latest revision" as this may cause breakage with a new lib version we have not tested.   
+Use cmake-based build system.
+Check out [hello world example](https://github.com/mbed-ce/mbed-ce-hello-world) for getting started.
 
-For [mbed-cli](https://github.com/ARMmbed/mbed-cli) users:
-```sh
-$ mbed import mbed-os-example-lorawan
-$ cd mbed-os-example-lorawan
+> **⚠️ Warning**
+>
+> Legacy development tools below are not supported anymore.
+> - [Arm's Mbed Studio](https://os.mbed.com/docs/mbed-os/v6.15/build-tools/mbed-studio.html)
+> - [Arm's Mbed CLI 2](https://os.mbed.com/docs/mbed-os/v6.15/build-tools/mbed-cli-2.html)
+> - [Arm's Mbed CLI 1](https://os.mbed.com/docs/mbed-os/v6.15/tools/developing-mbed-cli.html)
 
-#OR
+For [VS Code development](https://github.com/mbed-ce/mbed-os/wiki/Project-Setup:-VS-Code)
+or [OpenOCD as upload method](https://github.com/mbed-ce/mbed-os/wiki/Upload-Methods#openocd),
+install below additionally:
 
-$ git clone git@github.com:ARMmbed/mbed-os-example-lorawan.git
-$ cd mbed-os-example-lorawan
-$ mbed deploy
-```
+-   [NuEclipse](https://github.com/OpenNuvoton/Nuvoton_Tools#numicro-software-development-tools): Nuvoton's fork of Eclipse
+-   Nuvoton forked OpenOCD: Shipped with NuEclipse installation package above.
+    Checking openocd version `openocd --version`, it should fix to `0.10.022`.
+
 
 ### Example configuration and radio selection
 
 Because of the pin differences between the SX126x and SX127x radios, example application configuration files are provided with the correct pin sets in the `config/` dir of this project. 
 
 Please start by selecting the correct example configuration for your radio:  
-- For [Mbed Online Compiler](https://ide.mbed.com/compiler/) users, this can be done by simply replacing the contents of the `mbed_app.json` at the root of the project with the content of the correct example configuration in `config/` dir.
+- For [Mbed Online Compiler](https://ide.mbed.com/compiler/) users, this can be done by simply replacing the contents of the `mbed_app.json5` at the root of the project with the content of the correct example configuration in `config/` dir.
 - For [mbed-cli](https://github.com/ARMmbed/mbed-cli) users, the config file can be specifed on the command line with the `--app-config` option (ie `--app-config config/SX12xx_example_config.json`)
 
 With the correct config file selected, the user can then provide a pin set for their target board in the `NC` fields at the top if it is different from the default targets listed.  If your device is one of the LoRa modules supported by Mbed-OS, the pin set is already provided for the modules in the `target-overrides` field of the config file. For more information on supported modules, please refer to the [module support section](#module-support)
 
 ### Add network credentials
 
-Open the file `mbed_app.json` in the root directory of your application. This file contains all the user specific configurations your application and the Mbed OS LoRaWAN stack need. Network credentials are typically provided by LoRa network provider.
+Open the file `mbed_app.json5` in the root directory of your application. This file contains all the user specific configurations your application and the Mbed OS LoRaWAN stack need. Network credentials are typically provided by LoRa network provider.
 
 #### For OTAA
 
 Please add `Device EUI`, `Application EUI` and `Application Key` needed for Over-the-air-activation(OTAA). For example:
 
-```json
+```json5
 "lora.device-eui": "{ YOUR_DEVICE_EUI }",
 "lora.application-eui": "{ YOUR_APPLICATION_EUI }",
 "lora.application-key": "{ YOUR_APPLICATION_KEY }"
@@ -59,15 +67,15 @@ Please add `Device EUI`, `Application EUI` and `Application Key` needed for Over
 
 #### For ABP
 
-For Activation-By-Personalization (ABP) connection method, modify the `mbed_app.json` to enable ABP. You can do it by simply turning off OTAA. For example:
+For Activation-By-Personalization (ABP) connection method, modify the `mbed_app.json5` to enable ABP. You can do it by simply turning off OTAA. For example:
 
-```json
+```json5
 "lora.over-the-air-activation": false,
 ```
 
 In addition to that, you need to provide `Application Session Key`, `Network Session Key` and `Device Address`. For example:
 
-```json
+```json5
 "lora.appskey": "{ YOUR_APPLICATION_SESSION_KEY }",
 "lora.nwkskey": "{ YOUR_NETWORK_SESSION_KEY }",
 "lora.device-address": " YOUR_DEVICE_ADDRESS_IN_HEX  " 
@@ -118,22 +126,48 @@ Here is a list of boards and modules that have been tested by the community:
 - IMST iM880B (SX1272)
 - Embedded Planet Agora (SX1276)
 
-## Compiling the application
+## Developer guide
 
-Use Mbed CLI commands to generate a binary for the application.
-For example:
+In the following, we take **NuMaker-IoT-M252** board as an example for Mbed CE support.
 
-```sh
-$ mbed compile -m YOUR_TARGET -t ARM
-```
+### Hardware requirements
 
-## Running the application
+-   NuMaker-IoT-M252 board
+-   Host OS: Windows or others
 
-Drag and drop the application binary from `BUILD/YOUR_TARGET/ARM/mbed-os-example-lora.bin` to your Mbed enabled target hardware, which appears as a USB device on your host machine. 
+### Build the example
 
-Attach a serial console emulator of your choice (for example, PuTTY, Minicom or screen) to your USB device. Set the baudrate to 115200 bit/s, and reset your board by pressing the reset button.
+1.  Clone the example and navigate into it
+    ```
+    $ git clone https://github.com/mbed-nuvoton/NuMaker-mbed-ce-lorawan-example
+    $ cd NuMaker-mbed-ce-lorawan-example
+    $ git checkout -f master
+    ```
 
-You should see an output similar to this:
+1.  Deploy necessary libraries
+    ```
+    $ git submodule update --init
+    ```
+    Or for fast install:
+    ```
+    $ git submodule update --init --filter=blob:none
+    ```
+
+1.  Compile with cmake/ninja
+    ```
+    $ mkdir build; cd build
+    $ cmake .. -GNinja -DCMAKE_BUILD_TYPE=Develop -DMBED_TARGET=NUMAKER_IOT_M252
+    $ ninja
+    $ cd ..
+    ```
+
+### Flash the image
+
+Flash by drag-n-drop built image `NuMaker-mbed-ce-lorawan-example.bin` or `NuMaker-mbed-ce-lorawan-example.hex` onto **NuMaker-IoT-M252** board
+
+### Verify the result
+
+On host terminal (115200/8-N-1), you should see an output similar to this:
 
 ```
 Mbed LoRaWANStack initialized 
@@ -155,9 +189,9 @@ Mbed LoRaWANStack initialized
 ```
 
 ## [Optional] Adding trace library
-To enable Mbed trace, add to your `mbed_app.json` the following fields:
+To enable Mbed trace, add to your `mbed_app.json5` the following fields:
 
-```json
+```json5
     "target_overrides": {
         "*": {
             "mbed-trace.enable": true
@@ -172,7 +206,7 @@ The trace is disabled by default to save RAM and reduce main stack usage (see ch
 
 Using `Arm CC compiler` instead of `GCC` reduces `3K` of RAM. Currently the application takes about `15K` of static RAM with Arm CC, which spills over for the platforms with `20K` of RAM because you need to leave space, about `5K`, for dynamic allocation. So if you reduce the application stack size, you can barely fit into the 20K platforms.
 
-For example, add the following into `config` section in your `mbed_app.json`:
+For example, add the following into `config` section in your `mbed_app.json5`:
 
 ```
 "main_stack_size": {
